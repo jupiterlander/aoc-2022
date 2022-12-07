@@ -1,0 +1,16 @@
+$ cd /
+$ ls
+282959 btm
+dir fmfnpm
+dir gwlwp
+dir hchp
+275929 hmbbjbf
+dir nsphznf
+dir phschqg
+193293 rhpwvff
+dir spfwthmd
+dir wchdqb
+dir zlpmfh
+191479 zlpmfh.gpt
+$ cd fmfnpm
+$ ls
