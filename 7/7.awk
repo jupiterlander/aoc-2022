@@ -1,51 +1,68 @@
 BEGIN{
-    sum=0
-    level["/"]=1
-    current_dir="/"
-    last_dir="/"
-    current_level=0
-    filesystem["/"]="/"
     path=""
-
+    PROCINFO["sorted_in"]="@ind_str_asc"
 }
 /\$ cd/ {
-    current_level+=($3 == ".."? -1: 1)
-
     if ($3 == "..") {
         split(path, dirs, "/")
-        
-        for (i=1; i<length(dirs); i++) {
-            path = path dirs[i]
+        path=""
+        for (i=2; i<length(dirs)-1; i++) {
+            path = path "/" dirs[i]
         }
-        last_dir=current_dir
-        current_dir=$3
-    } else {
-        path=path $3
-        current_level--
-    }
 
-   
-    
-    print "changed dir: ", $3, current_level, "path: ", path
+        sep = (path == "/")? "": "/"
+        path = path sep
+    } else if ($3 == "/"){
+        path=$3
+    } else {
+        path=path $3 "/"
+    }
 }
-/dir/ {
-    filesystem[$2][dir]=$1 
-    print current_dir, current_level, $2, $1
+/^dir/ {
+    filesystem[path $2 "/"]=0
 }
 /^[0-9]/{
-    filesystem[current_level][$2]=$1
-    print current_dir, current_level, $2, $1
+    filesystem[path $2]=$1
 }
 
 END{
-    print "************"
-  
-        for (lvl in filesystem){
-            print lvl
-            for (file in filesystem[lvl]) {
-                 print filesystem[lvl][file], file
+        sum=0
+        for (path in filesystem){
+              if (!match(path, /\/$/)) {
+                    file = split(path, dirs, "/")
+                    dirs[1]="/"
+
+                    dir=""
+                    for (i=1; i<file; i++) {
+                        sep = (i>1)? "/": ""
+                        dir = dir dirs[i] sep
+
+                        filesystem[dir]+=filesystem[path]
+                    }
+                }
+        }
+
+        PROCINFO["sorted_in"]="@val_num_asc"
+        required_space = (70000000 - filesystem["/"] - 30000000) * -1
+
+        for (path in filesystem) {
+            if (match(path, /\/$/)) {
+                if (filesystem[path]<=100000) {
+                    sum+=filesystem[path]
+                }
+            }
+            if (!smallest && filesystem[path] >= required_space) {
+                smallest=filesystem[path]
             }
         }
-       
 
+        print "part 1"
+        print "sum #1  :", sum
+        print "*********"
+        print "part 2"
+        print "total   :", 70000000
+        print "required:", 30000000
+        print "used    :", filesystem["/"]
+        print "required:" , required_space
+        print "smallest:", smallest
 }
